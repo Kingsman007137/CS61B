@@ -9,7 +9,7 @@ interface InputSource {
     String getKey();
 
     /** Returns a candidate Tile whose row and column is in the range
-     *  0 .. SIZE-1.  */
+     *  0 . SIZE-1.  */
     Tile getNewTile(int size);
 
 }

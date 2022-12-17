@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @Pan TODO: YOUR NAME HERE
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -106,6 +106,7 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
@@ -113,8 +114,55 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        board.setViewingPerspective(side);
+        /**use c & r so that you can easily know which represent col and row.*/
+        for (int c = 0; c < board.size(); c++) {
+            /**avoid merging more than once*/
+            boolean haveMerge = false;
+            /**for every colume*/
+            int haveMergeRow = 0;
+            for (int r = board.size() - 2; r >= 0; r--) {
+                Tile t = board.tile(c, r);
+                int row = -1;
+                if (t != null) {
+                    for (int i = r + 1; i < board.size(); i++) {
+                        if (board.tile(c, i) == null) {
+                            row = i;
+                            changed = true;
+                        }
+                        /**avoid skipping the tile(s) and merging*/
+                        else if (board.tile(c, i).value() != t.value()) {
+                            break;
+                        }
+                        /**one row can't merge twice*/
+                        else if (i != haveMergeRow){
+                            haveMerge = true;
+                            row = i;
+                            score += 2 * t.value();
+                            changed = true;
+                        }
+                    }
+                    if (row != -1) {
+                        if (haveMerge) {
+                            haveMergeRow = row;
+                            /**Don't forget to reset it every time*/
+                            haveMerge = false;
+                        }
+                        board.move(c, row, t);
+                    }
+                }
+            }
+        }
+
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
+        if (gameOver) {
+            if (maxScore < score) {
+                maxScore = score;
+            }
+        }
+
         if (changed) {
             setChanged();
         }
@@ -138,6 +186,14 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b.size(); j++) {
+                if (b.tile(i, j) == null) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -145,9 +201,25 @@ public class Model extends Observable {
      * Returns true if any tile is equal to the maximum valid value.
      * Maximum valid value is given by MAX_PIECE. Note that
      * given a Tile object t, we get its value with t.value().
+     * Tip:
+     * Leaving in hard coded numbers like 2048 is a bad programming practice
+     * sometimes referred to as a “magic number”. The danger of such magic numbers is that
+     * if you change them in one part of your code but not another, you might get unexpected results.
+     * By using a variable like MAX_PIECE you can ensure they all get changed together.
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b.size(); j++) {
+                Tile t = b.tile(i, j);
+                if (t == null) {
+                    continue;
+                }
+                else if (t.value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -159,6 +231,46 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        for (int i = 0; i < b.size(); i++) {
+            for (int j = 0; j < b.size(); j++) {
+                Tile t = b.tile(i, j);
+                if (t == null) {
+                    return true;
+                }
+                else {
+                    for (int col = -1; col <= 1; col++) {
+                        /** avoid crossing the border or comparing with itself*/
+                        if (col + i < 0 || col + i >= b.size() || col == 0)  {
+                            continue;
+                        }
+                        else {
+                            Tile upAndDown = b.tile(col + i, j);
+                            /**it still may be null.*/
+                            if (upAndDown == null) {
+                                return true;
+                            }
+                            else if (upAndDown.value() == t.value()) {
+                                return true;
+                            }
+                        }
+                    }
+                    for (int row = -1; row <= 1; row++) {
+                        if (row + j < 0 || row + j >= b.size() || row == 0)  {
+                            continue;
+                        }
+                        else {
+                            Tile leftAndRight = b.tile(i, row + j);
+                            if (leftAndRight == null) {
+                                return true;
+                            }
+                            else if (leftAndRight.value() == t.value()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return false;
     }
 
