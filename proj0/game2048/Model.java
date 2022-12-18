@@ -141,6 +141,9 @@ public class Model extends Observable {
                             score += 2 * t.value();
                             changed = true;
                         }
+                        else {
+                            break;
+                        }
                     }
                     if (row != -1) {
                         if (haveMerge) {
