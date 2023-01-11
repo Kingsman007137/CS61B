@@ -10,12 +10,10 @@ public class IntListExercises {
      */
     public static void addConstant(IntList lst, int c) {
         IntList head = lst;
-        if (head.rest == null) {
+        while (head != null) {
             head.first += c;
-            return;
+            head = head.rest;
         }
-        head.first += c;
-        addConstant(head.rest, c);
     }
 
     /**
